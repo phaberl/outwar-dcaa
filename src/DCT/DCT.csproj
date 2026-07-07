@@ -9,7 +9,6 @@
     <RootNamespace>DCT</RootNamespace>
     <AssemblyName>DCT</AssemblyName>
     
-    <ApplicationIcon>Default.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     
     <SignAssembly>true</SignAssembly>
