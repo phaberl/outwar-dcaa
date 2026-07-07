@@ -73,11 +73,11 @@ jobs:
 
     # Restore dependencies
     - name: Restore dependencies
-      run: dotnet restore ${{ env:Solution_Name }}
+      run: dotnet restore ${{ env.Solution_Name }}
 
     # Build and Publish directly to a single EXE file
     - name: Publish Standalone EXE
-      run: dotnet publish ${{ env:Project_Path }} -c ${{ matrix.configuration }} -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true -o ./publish
+      run: dotnet publish ${{ env.Project_Path }} -c ${{ matrix.configuration }} -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true -o ./publish
 
     # Upload the EXE so you can download it from GitHub
     - name: Upload Build Artifact
