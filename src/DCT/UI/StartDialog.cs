@@ -14,19 +14,18 @@ namespace DCT.UI
 {
     internal partial class StartDialog : Form
     {
+        private string local = "DCT-Release.exe"; // Fallback declaration for compile safety
+
         internal StartDialog()
         {
             InitializeComponent();
-
             lnkGo.Enabled = false;
         }
 
         private void frmStart_Load(object sender, EventArgs e)
         {
             this.Text = string.Format("You are using v[{0}{1}] of Typpo's DC Tool - www.typpo.us", Version.Full, Version.Beta);
-
             Run();
-
             txtMain.SelectionStart = 0;
             txtMain.SelectionLength = 0;
             lnkGo.Enabled = true;
@@ -35,15 +34,13 @@ namespace DCT.UI
         private void Run()
         {
             SetStatus("Loading open message...");
-            string src =
-                HttpSocket.DefaultInstance.Get("http://www.typpo.us/dctopen.txt")
-                    .Replace("\n", "\r\n");
-
+            string src = HttpSocket.DefaultInstance.Get("http://www.typpo.us/dctopen.txt").Replace("\n", "\r\n");
             txtMain.Text = src;
 
             Parser p = new Parser(src);
             CoreUI.Instance.ChatPanel.Channel = p.Parse("<chan>", "</chan>");
             CoreUI.Instance.ChatPanel.Server = p.Parse("<svr>", "</svr>");
+            
             int tmp;
             if (int.TryParse(p.Parse("<port>", "</port>"), out tmp))
                 CoreUI.Instance.ChatPanel.Port = tmp;
@@ -51,7 +48,6 @@ namespace DCT.UI
             {
                 CoreUI.Instance.ChatPanel.Port = 6667;
             }
-            CoreUI.Instance.Changes = p.Parse("Change History:", "End Changes").Replace("\r", "").Trim();
 
             if (src.Contains("<msg>"))
             {
@@ -60,22 +56,21 @@ namespace DCT.UI
                 txtMain.SelectionLength = 0;
             }
 
-            if (Version.Full != p.Parse("<ver>", "</ver>"))
+            try
             {
-                string url = p.Parse("<url>", "</url>");
+                if (Version.Full != p.Parse("<ver>", "</ver>"))
+                {
+                    string url = p.Parse("<url>", "</url>");
 
-               if (url == "ERROR")
-            {
-                SetStatus("Bypassing offline server check...");
-                ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
-                
-                // Signal SUCCESS before closing, so the main app knows to launch!
-                this.Invoke((MethodInvoker)delegate { 
-                    this.DialogResult = DialogResult.OK;
-                    this.Close(); 
-                });
-                return;
-            }
+                    if (url == "ERROR")
+                    {
+                        this.Invoke((MethodInvoker)delegate { 
+                            this.DialogResult = DialogResult.OK;
+                            this.Close(); 
+                        });
+                        return;
+                    }
+
                     if (File.Exists(local))
                     {
                         SetStatus("You've already downloaded the new version, use it instead: " + local);
@@ -84,58 +79,38 @@ namespace DCT.UI
                     {
                         new WebClient().DownloadFile(new Uri(url), local);
                     }
-
                     Process.Start(local);
                     Globals.Terminate = true;
                     Application.Exit();
                     return;
                 }
-        }
-                catch
-                {
-                    MessageBox.Show("Automatic updating failed.\n\n"
-                                    +
-                                    "You will be directed to a manual download.  Place the file in "
-                                    + Application.StartupPath,
-                                    "Updating Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                    Process.Start(url);
-                    Globals.Terminate = true;
-                    Application.Exit();
-                    return;
-                }
+                CoreUI.Instance.Changes = p.Parse("Change History:", "End Changes").Replace("\r", "").Trim();
+                SetStatus("Building latest DC maps from host site...");
+                ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, true);
+                SetStatus("Ready with latest maps...");
             }
-
-            string mapupdate = p.Parse("<map>", "</map>");
-            if (mapupdate != "ERROR")
-            {
-                try
-                {
-                    DateTime last = DateTime.ParseExact(mapupdate, "yyyy-MM-dd HH:mm", null);
-
-                    if (last > CoreUI.Instance.Settings.LastMapUpdate)
-                    {
-                        // new maps
-                        SetStatus("Building latest DC maps from host site...");
-                        ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, true);
-                        SetStatus("Ready with latest maps...");
-                    }
-                    else
-                    {
-                        ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
-                        SetStatus("Ready...");
-                    }
-                }
-                catch (FormatException)
-                {
-                    ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
-                    SetStatus("Could not read new map status, update maps manually");
-                }
-            }
-            else
+            catch (FormatException)
             {
                 ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
                 SetStatus("Could not read new map status, update maps manually");
+            }
+            catch
+            {
+                txtMain.SelectionLength = 0;
+                this.Focus();
+                MessageBox.Show("Automatic updating failed.\n\n" +
+                    "Could not read startup instructions from server. If map data has already been saved to your computer, the program should work.\n\n" +
+                    "If this error persists (and you can get to www.typpo.us), please close or adjust any firewall/router/antivirus/antispyware that is blocking this program's connection to the internet.", 
+                    "Error", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Hand);
+                
+                this.Invoke((MethodInvoker)delegate { 
+                    this.DialogResult = DialogResult.OK;
+                    this.Close(); 
+                });
+                return;
             }
         }
 
