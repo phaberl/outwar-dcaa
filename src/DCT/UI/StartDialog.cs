@@ -90,6 +90,7 @@ namespace DCT.UI
                     Application.Exit();
                     return;
                 }
+        }
                 catch
                 {
                     MessageBox.Show("Automatic updating failed.\n\n"
