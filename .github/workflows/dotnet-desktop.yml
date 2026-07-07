@@ -45,3 +45,4 @@ jobs:
       with:
         name: DCT-${{ matrix.configuration }}
         path: ./publish/
+        
