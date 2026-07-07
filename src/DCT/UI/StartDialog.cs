@@ -64,20 +64,15 @@ namespace DCT.UI
             {
                 string url = p.Parse("<url>", "</url>");
 
-                if (url == "ERROR")
-                {
-                    SetStatus("Could not access server.");
-                    txtMain.Text = " Could not access startup server.  If you already had map data saved on your computer, the program should work but you will not receive software or map updates automatically.";
-                    MessageBox.Show(
-                        "Could not read startup instructions from server.  If map data has already been saved to your computer, the program should work.\n\nIf this error persists (and you can get to www.typpo.us), please close or adjust any firewall/router/antivirus/antispyware that is blocking this program's connection to the internet.",
-                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    SetStatus("Attempting to build map data...");
-                    ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
-                    SetStatus("Could not contact server");
-                    //Globals.Terminate = true;
-                    //Application.Exit();
-                    return;
-                }
+               if (url == "ERROR")
+            {
+                SetStatus("Bypassing offline server check...");
+                ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
+                
+                // Force the startup dialog to close so the main app can load!
+                this.Invoke((MethodInvoker)delegate { this.Close(); });
+                return;
+            }
 
                 SetStatus("Downloading new version...");
                 try
