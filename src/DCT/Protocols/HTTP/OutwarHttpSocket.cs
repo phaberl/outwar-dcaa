@@ -15,7 +15,7 @@ namespace DCT.Protocols.Http
                 throw new Exception("Attempted HTTP request before account was assigned.");
             }
 
-            string ret = base.Request("http://localhost:8000/" + url, write);
+            string ret = base.Request("http://" + Account.Server + ".outwar.com/" + url, write);
             ret = Parser.RemoveRange(ret, "<!--", "-->");
             if (ret.Contains(".outwar.com"))
             {

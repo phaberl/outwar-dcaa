@@ -72,19 +72,13 @@ namespace DCT.Outwar
             Accounts.RemoveAt(index);
         }
 
-        internal int Login(string server, string user, string pass)
+       internal int Login(string server, string user, string pass)
         {
             HttpSocket.DefaultInstance.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:0.9.4) Gecko/20011019 Netscape6/6.2";
             HttpSocket.DefaultInstance.Cookie = null;
-            //string loginpage = HttpSocket.DefaultInstance.Get("http://localhost:8000");
-            //if(loginpage.Contains("tempSec"))
-            //{
-            //    string tmp = Parser.Parse(loginpage, "Enter ", " here");
-            //    tmp = Parser.RemoveRange(tmp, "<", ">").Replace("\"", "").Replace("'", "");
-            //    toPost += "&tempSec=" + tmp;
-            //}
+            
             string toPost = "login_username=" + user + "&login_password=" + pass;
-            HttpSocket.DefaultInstance.Post("http://localhost:8000/myaccount.php", toPost);
+            HttpSocket.DefaultInstance.Post(string.Format("http://{0}.outwar.com/myaccount.php", server), toPost);
 
             int ret = AddCharacters();
 
@@ -98,7 +92,8 @@ namespace DCT.Outwar
             HttpSocket.DefaultInstance.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:0.9.4) Gecko/20011019 Netscape6/6.2";
             HttpSocket.DefaultInstance.Cookie = null;
 
-           HttpSocket.DefaultInstance.Get(string.Format("http://localhost:8000/myaccount.php?rg_sess_id={0}&serverid={1}&suid={2}",
+           HttpSocket.DefaultInstance.Get(string.Format("http://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
+                MainAccount.Server,
                 RgSessId,
                 Server.NameToId(MainAccount.Server),
                 MainAccount.Id));
@@ -113,7 +108,7 @@ namespace DCT.Outwar
             int ret = 0;
             for (int i = 1; i <= Server.NUM_SERVERS; i++)
             {
-                string s = string.Format("http://localhost:8000/accounts.php?ac_serverid={0}", i);
+                string s = string.Format("http://{0}.outwar.com/accounts.php?ac_serverid={1}", MainAccount.Server, i);
                 string svrlist = HttpSocket.DefaultInstance.Get(s);
                 ret += AddAccountsFromSource(svrlist);
             }
