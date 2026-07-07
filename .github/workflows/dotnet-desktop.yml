@@ -28,17 +28,19 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # Restore dependencies (Auto-discovers the solution file)
+    # Restore dependencies (Switches to the correct directory first)
     - name: Restore dependencies
       run: dotnet restore
+      working-directory: server/src/DCT
 
-    # Build and Publish directly to a single EXE file (Auto-discovers the solution file)
+    # Build and Publish directly to a standalone EXE
     - name: Publish Standalone EXE
       run: dotnet publish -c ${{ matrix.configuration }} -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true -o ./publish
+      working-directory: server/src/DCT
 
     # Upload the EXE so you can download it from GitHub
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: DCT-${{ matrix.configuration }}
-        path: ./publish/
+        path: server/src/DCT/publish/
