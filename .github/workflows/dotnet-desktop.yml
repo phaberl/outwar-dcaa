@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Solution_Name: src/DCT/DCT.sln
+      Solution_Name: server/src/DCT/DCT.sln
 
     steps:
     - name: Checkout
@@ -45,4 +45,3 @@ jobs:
       with:
         name: DCT-${{ matrix.configuration }}
         path: ./publish/
-        
