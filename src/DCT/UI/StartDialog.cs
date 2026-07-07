@@ -69,15 +69,13 @@ namespace DCT.UI
                 SetStatus("Bypassing offline server check...");
                 ThreadEngine.DefaultInstance.DoParameterized(Pathfinder.BuildMap, false);
                 
-                // Force the startup dialog to close so the main app can load!
-                this.Invoke((MethodInvoker)delegate { this.Close(); });
+                // Signal SUCCESS before closing, so the main app knows to launch!
+                this.Invoke((MethodInvoker)delegate { 
+                    this.DialogResult = DialogResult.OK;
+                    this.Close(); 
+                });
                 return;
             }
-
-                SetStatus("Downloading new version...");
-                try
-                {
-                    string local = url.Substring(url.LastIndexOf("/") + 1);
                     if (File.Exists(local))
                     {
                         SetStatus("You've already downloaded the new version, use it instead: " + local);
