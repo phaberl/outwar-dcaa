@@ -16,9 +16,6 @@ jobs:
 
     runs-on: windows-latest
 
-    env:
-      Solution_Name: server/src/DCT/DCT.sln
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -31,13 +28,13 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # Restore dependencies
+    # Restore dependencies (Auto-discovers the solution file)
     - name: Restore dependencies
-      run: dotnet restore ${{ env.Solution_Name }}
+      run: dotnet restore
 
-    # Build and Publish directly to a single EXE file
+    # Build and Publish directly to a single EXE file (Auto-discovers the solution file)
     - name: Publish Standalone EXE
-      run: dotnet publish ${{ env.Solution_Name }} -c ${{ matrix.configuration }} -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true -o ./publish
+      run: dotnet publish -c ${{ matrix.configuration }} -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true -o ./publish
 
     # Upload the EXE so you can download it from GitHub
     - name: Upload Build Artifact
