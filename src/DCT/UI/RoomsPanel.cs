@@ -46,6 +46,13 @@ namespace DCT.UI
         internal void BuildView()
         {
             lvPathfind.Items.Clear();
+
+            // Safety net: If maps are missing, stop here before the loop crashes!
+            if (Pathfinder.Rooms == null)
+            {
+                return;
+            }
+
             foreach (MappedRoom rm in Pathfinder.Rooms)
             {
                 if (rm != null)
