@@ -44,6 +44,13 @@ namespace DCT.UI
         internal void BuildView()
         {
             lvAdventures.Items.Clear();
+
+            // Safety net: If adventure data is missing, stop here before the loop crashes!
+            if (Pathfinder.Adventures == null)
+            {
+                return;
+            }
+
             SortedList<string, int> l = Pathfinder.Adventures;
             for (int i = 0; i < l.Count; i++)
             {
