@@ -106,9 +106,13 @@ namespace DCT.Outwar
         private int AddCharacters()
         {
             int ret = 0;
+            
+            // Safety net: Use torax as default if MainAccount isn't set yet
+            string targetServer = MainAccount != null ? MainAccount.Server : "torax";
+
             for (int i = 1; i <= Server.NUM_SERVERS; i++)
             {
-                string s = string.Format("http://{0}.outwar.com/accounts.php?ac_serverid={1}", MainAccount.Server, i);
+                string s = string.Format("http://{0}.outwar.com/accounts.php?ac_serverid={1}", targetServer, i);
                 string svrlist = HttpSocket.DefaultInstance.Get(s);
                 ret += AddAccountsFromSource(svrlist);
             }
