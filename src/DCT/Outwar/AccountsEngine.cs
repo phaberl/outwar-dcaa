@@ -88,16 +88,23 @@ namespace DCT.Outwar
 
         internal int Login(string server, string rgsessid)
         {
-
             HttpSocket.DefaultInstance.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:0.9.4) Gecko/20011019 Netscape6/6.2";
-            HttpSocket.DefaultInstance.Cookie = null;
+            
+            // Safety net: Only ping myaccount if MainAccount exists, otherwise set the cookie manually for the scraper
+            if (MainAccount != null)
+            {
+                HttpSocket.DefaultInstance.Cookie = null;
+                HttpSocket.DefaultInstance.Get(string.Format("http://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
+                    MainAccount.Server,
+                    rgsessid,
+                    Server.NameToId(MainAccount.Server),
+                    MainAccount.Id));
+            }
+            else
+            {
+                HttpSocket.DefaultInstance.Cookie = "rg_sess_id=" + rgsessid + ";";
+            }
 
-           // Safety net: Fallback to the passed server parameter if MainAccount isn't set yet
-           HttpSocket.DefaultInstance.Get(string.Format("http://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
-                MainAccount != null ? MainAccount.Server : server,
-                RgSessId,
-                Server.NameToId(MainAccount != null ? MainAccount.Server : server),
-                MainAccount != null ? MainAccount.Id : 0));
             int ret = AddCharacters();
 
             HttpSocket.DefaultInstance.UserAgent = "Typpo DCAA Client";
@@ -108,8 +115,8 @@ namespace DCT.Outwar
         {
             int ret = 0;
             
-            // Safety net: Use torax as default if MainAccount isn't set yet
-            string targetServer = MainAccount != null ? MainAccount.Server : "torax";
+            // Safety net: Safely convert the enum to a string, or fallback to the torax string
+            string targetServer = MainAccount != null ? MainAccount.Server.ToString() : "torax";
 
             for (int i = 1; i <= Server.NUM_SERVERS; i++)
             {
