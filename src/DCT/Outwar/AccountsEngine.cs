@@ -78,7 +78,8 @@ namespace DCT.Outwar
             HttpSocket.DefaultInstance.Cookie = null;
             
             string toPost = "login_username=" + user + "&login_password=" + pass;
-            HttpSocket.DefaultInstance.Post(string.Format("http://{0}.outwar.com/myaccount.php", server), toPost);
+            // Upgraded to HTTPS and hardcoded to torax to find your accounts correctly!
+            HttpSocket.DefaultInstance.Post("https://torax.outwar.com/myaccount.php", toPost);
 
             int ret = AddCharacters();
 
@@ -94,7 +95,7 @@ namespace DCT.Outwar
             if (MainAccount != null)
             {
                 HttpSocket.DefaultInstance.Cookie = null;
-                HttpSocket.DefaultInstance.Get(string.Format("http://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
+                HttpSocket.DefaultInstance.Get(string.Format("https://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
                     MainAccount.Server,
                     rgsessid,
                     Server.NameToId(MainAccount.Server),
@@ -120,7 +121,8 @@ namespace DCT.Outwar
 
             for (int i = 1; i <= Server.NUM_SERVERS; i++)
             {
-                string s = string.Format("http://{0}.outwar.com/accounts.php?ac_serverid={1}", targetServer, i);
+                // Upgraded character scraper to HTTPS
+                string s = string.Format("https://{0}.outwar.com/accounts.php?ac_serverid={1}", targetServer, i);
                 string svrlist = HttpSocket.DefaultInstance.Get(s);
                 ret += AddAccountsFromSource(svrlist);
             }
