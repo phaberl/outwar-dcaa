@@ -46,6 +46,13 @@ namespace DCT.UI
         internal void BuildView()
         {
             lvMobs.Items.Clear();
+
+            // Safety net: If mobs data is missing, stop here before the loop crashes!
+            if (Pathfinder.Mobs == null)
+            {
+                return;
+            }
+
             foreach (MappedMob mb in Pathfinder.Mobs)
             {
                 if (mb != null)

@@ -46,9 +46,16 @@ namespace DCT.UI
             mUI = ui;
         }
 
-        internal void BuildView()
+       internal void BuildView()
         {
             lvSpawns.Items.Clear();
+
+            // Safety net: If spawns data is missing, stop here!
+            if (Pathfinder.Spawns == null)
+            {
+                return;
+            }
+
             foreach (MappedMob mb in Pathfinder.Spawns)
             {
                 if (mb != null)
