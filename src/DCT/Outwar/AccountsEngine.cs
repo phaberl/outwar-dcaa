@@ -92,11 +92,12 @@ namespace DCT.Outwar
             HttpSocket.DefaultInstance.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:0.9.4) Gecko/20011019 Netscape6/6.2";
             HttpSocket.DefaultInstance.Cookie = null;
 
+           // Safety net: Fallback to the passed server parameter if MainAccount isn't set yet
            HttpSocket.DefaultInstance.Get(string.Format("http://{0}.outwar.com/myaccount.php?rg_sess_id={1}&serverid={2}&suid={3}",
-                MainAccount.Server,
+                MainAccount != null ? MainAccount.Server : server,
                 RgSessId,
-                Server.NameToId(MainAccount.Server),
-                MainAccount.Id));
+                Server.NameToId(MainAccount != null ? MainAccount.Server : server),
+                MainAccount != null ? MainAccount.Id : 0));
             int ret = AddCharacters();
 
             HttpSocket.DefaultInstance.UserAgent = "Typpo DCAA Client";
