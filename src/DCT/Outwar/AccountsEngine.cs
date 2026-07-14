@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DCT.Parsing;
 using DCT.Protocols.Http;
@@ -78,10 +79,32 @@ namespace DCT.Outwar
             HttpSocket.DefaultInstance.Cookie = null;
             
             string toPost = "login_username=" + user + "&login_password=" + pass;
-            // Upgraded to HTTPS and hardcoded to torax to find your accounts correctly!
-            HttpSocket.DefaultInstance.Post("https://torax.outwar.com/myaccount.php", toPost);
+            
+            // Log the connection attempt so we can verify it in the UI
+            UI.CoreUI.Instance.LogPanel.Log("Connecting to https://torax.outwar.com/myaccount.php...");
+
+            string response = "";
+            try 
+            {
+                response = HttpSocket.DefaultInstance.Post("https://torax.outwar.com/myaccount.php", toPost);
+                
+                if (string.IsNullOrEmpty(response))
+                {
+                    UI.CoreUI.Instance.LogPanel.Log("W: Received an empty response from the login server.");
+                }
+                else 
+                {
+                    UI.CoreUI.Instance.LogPanel.Log("Connected! Response received from server. Scraping characters...");
+                }
+            }
+            catch (Exception ex)
+            {
+                UI.CoreUI.Instance.LogPanel.Log("E: Connection failed! Error: " + ex.Message);
+            }
 
             int ret = AddCharacters();
+
+            UI.CoreUI.Instance.LogPanel.Log(string.Format("Login sequence finished. Found {0} characters.", ret));
 
             HttpSocket.DefaultInstance.UserAgent = "Typpo DCAA Client";
             return ret;
@@ -91,7 +114,6 @@ namespace DCT.Outwar
         {
             HttpSocket.DefaultInstance.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:0.9.4) Gecko/20011019 Netscape6/6.2";
             
-            // Safety net: Only ping myaccount if MainAccount exists, otherwise set the cookie manually for the scraper
             if (MainAccount != null)
             {
                 HttpSocket.DefaultInstance.Cookie = null;
@@ -116,15 +138,20 @@ namespace DCT.Outwar
         {
             int ret = 0;
             
-            // Safety net: Safely convert the enum to a string, or fallback to the torax string
             string targetServer = MainAccount != null ? MainAccount.Server.ToString() : "torax";
 
             for (int i = 1; i <= Server.NUM_SERVERS; i++)
             {
-                // Upgraded character scraper to HTTPS
                 string s = string.Format("https://{0}.outwar.com/accounts.php?ac_serverid={1}", targetServer, i);
-                string svrlist = HttpSocket.DefaultInstance.Get(s);
-                ret += AddAccountsFromSource(svrlist);
+                try 
+                {
+                    string svrlist = HttpSocket.DefaultInstance.Get(s);
+                    ret += AddAccountsFromSource(svrlist);
+                }
+                catch (Exception ex)
+                {
+                    UI.CoreUI.Instance.LogPanel.Log("W: Failed to scrape server list " + i + ": " + ex.Message);
+                }
             }
 
             if (HttpSocket.DefaultInstance.HasCookie)
@@ -136,8 +163,7 @@ namespace DCT.Outwar
 
         private int AddAccountsFromSource(string src)
         {
-            // No accounts
-            if (!src.Contains("PLAY!"))
+            if (string.IsNullOrEmpty(src) || !src.Contains("PLAY!"))
             {
                 return 0;
             }
